@@ -10,7 +10,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 async function main() {
     let lastIndexedPost = 0;
     while (true) {
-        const feedRes = await fetch(`https://scratch.mit.edu/discuss/feeds/forum/31/`);
+        const feedRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent("https://scratch.mit.edu/discuss/feeds/forum/31/")}`);
         const feedXml = await feedRes.text();
         const feedDoc = new DOMParser().parseFromString(feedXml, "text/xml");
 
@@ -19,8 +19,8 @@ async function main() {
             const id = Number(post.querySelector("id").textContent);
             if (id <= lastIndexedPost) continue;
 
-            const title = post.querySelector("title").textContent;
-            const content = post.querySelector("summary").textContent.replace(/\n/g, " ").replace(/&[a-z];/g, " ").replace(/<blockquote>((.|\n)*)<\/blockquote>/g, "").replace(/<((.|\n)*)>((.|\n)*)<\/((.|\n)*)>/g, "$2");
+            const title = post.querySelector("title").textContent.replace(/\\n/g, " ");
+            const content = post.querySelector("summary").textContent.replace(/(\\n|\n)/g, " ").replace(/&[a-z];/g, " ").replace(/<blockquote>((.|\n)*)<\/blockquote>/g, "").replace(/<((.|\n)*)>((.|\n)*)<\/((.|\n)*)>/g, "$2");
             const author = post.querySelector("author > name").textContent;
             const date = post.querySelector("published").textContent;
 
