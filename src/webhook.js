@@ -11,7 +11,9 @@ async function main() {
     let lastIndexedPost = 0;
     while (true) {
         const feedRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent("https://scratch.mit.edu/discuss/feeds/forum/31/")}`);
-        const feedXml = await feedRes.text();
+        const feedJson = await feedRes.json();
+
+        const feedXml = feedJson.contents;
         const feedDoc = new DOMParser().parseFromString(feedXml, "text/xml");
 
         const posts = [...feedDoc.querySelectorAll("entry")].reverse();
