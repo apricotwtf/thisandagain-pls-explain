@@ -1,5 +1,4 @@
-import { SlashCommandChannelOption } from "@discordjs/builders";
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandChannelOption, SlashCommandBuilder } from "@discordjs/builders";
 import { updateCache } from "../lib/cache.js";
 
 

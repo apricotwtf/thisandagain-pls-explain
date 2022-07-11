@@ -17,7 +17,7 @@ for (const file of commandFiles) {
     commands.set(command.data.name, command);
 }
 
-if (process.argv.includes("update-commands")) {
+if (process.argv.includes("-uc")) {
     console.log("Updating commands")
     const rest = new REST({ version: 10 }).setToken(clientToken);
 
@@ -31,11 +31,11 @@ if (process.argv.includes("update-commands")) {
         console.log("Application commands refreshed");
     } catch(ex) {
         console.log(`Error refreshing commands: ${ex}`);
-    }
+    };
+    process.exit(1);
 }
 
-// Start webhooks
-import "./webhook.js"
+
 // Now, we can start our client.
 const client = new Client({
     intents: [
@@ -47,6 +47,7 @@ client.commands = commands;
 
 client.once("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    import("./webhook/index.js");
 
     client.user.setActivity("over the forums", { type: "WATCHING" });
 });
