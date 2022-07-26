@@ -39,7 +39,7 @@ async function main() {
             foundNewAtLeastOnce = true;
 
             const title = post.querySelector("title").textContent.replace(/\\n/g, " ");
-            const content = transferHTMLToContent(post.querySelector("summary"), feedDoc).innerHTML.replace(/<blockquote>((.|\n)*)<\/blockquote>/g, "").replace(/(\\n|\n)/g, " ").replace(/&[a-z];/g, " ").replace(/<((.|\n)*)>((.|\n)*)<\/((.|\n)*)>/g, "$2");
+            const content = transferHTMLToContent(post.querySelector("summary"), feedDoc).innerHTML.replace(/<blockquote>((.|\n)*)<\/blockquote>/g, "").replace(/(\\n|\n)/g, " ").replace(/&[a-z];/g, " ").replace(/<((.|\n)*)>((.|\n)*)<\/((.|\n)*)>/g, "$2").replace(/<br \/>/g, "\n");
             const author = post.querySelector("author > name").textContent;
             const date = post.querySelector("published").textContent;
 

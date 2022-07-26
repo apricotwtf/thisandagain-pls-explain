@@ -3,8 +3,7 @@ import { botChannelID, clientId, clientToken, guildID } from "./constants.js";
 
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v10";
-import { Client, Intents } from "discord.js";
-import { Collection } from "discord.js";
+import { Client, Intents, Collection } from "discord.js";
 import { getCacheItem } from "./lib/cache.js";
 
 const staticCommands = [];
