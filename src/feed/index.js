@@ -1,0 +1,75 @@
+import { WebhookClient, MessageEmbed } from "discord.js";
+import { DOMParser } from "linkedom";
+
+import { feedChannelID, guildID } from "../constants.js";
+import { updateCache, getCacheItem } from "../lib/cache.js";
+import { fetchOcular, fetchScratch, fetch } from "./data.js";
+import parseSafeHTML from "./safe-parse.js";
+import db from "../database.js";
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/** @param {import("discord.js").Client} client */
+export default async function main(client) {
+    const channel = await client.channels.fetch(feedChannelID)
+    console.log("[feed]: started");
+    let lastIndexedPost = Number(getCacheItem("last-indexed-post") || "0");
+    m: while (true) {
+        console.log("[feed]: fetching posts");
+        const feedRes = await fetch("https://vercel-scratch-proxy.vercel.app/api/djangobb/feed?f=31&accurateBB&t=" + Date.now());
+        const feed = await feedRes.json();
+
+        let foundNewAtLeastOnce = false;
+        const ocularCache = Object.create(null)
+        const scratchCache = Object.create(null);
+
+        for (const post of feed) {
+            if (post.id <= lastIndexedPost) {
+                continue;
+            };
+            foundNewAtLeastOnce = true;
+
+            const { content: { bb: content }, author, date } = post;
+            console.log(`New post by ${author} at ${date}`);
+
+            const ocular = await (ocularCache[author] || (ocularCache[author] = fetchOcular(author)));
+            const scratch = await (scratchCache[author] || (scratchCache[author] = fetchScratch(author)));
+
+            // Look for a discord user with the same username
+            let newAuthor = null;
+            const user = await db.collection("users").findOne({
+                accounts: {
+                    $elemMatch: {
+                        name: author
+                    } 
+                }
+            });
+            if (user) {
+                newAuthor = "<@" + user.user + ">";
+            }
+            const embed = new MessageEmbed()
+                .setTitle(post.topic.title)
+                .setDescription(
+                    `${content.substring(0, 512)}`
+                )
+                .setTimestamp(new Date(date))
+                .setColor(ocular.color)
+                .setURL(`https://scratch.mit.edu/discuss/post/${post.id}/`);
+
+            embed.setAuthor({
+                name: author,
+                url: `https://scratch.mit.edu/users/${author}/`,
+                iconURL: `https://uploads.scratch.mit.edu/get_image/user/${scratch.id}_70x70.png`,
+            });
+
+            channel.send({
+                embeds: [embed],
+            })
+            lastIndexedPost = post.id;
+        };
+        updateCache({
+            "last-indexed-post": lastIndexedPost,
+        })
+        await sleep(10000);
+    }
+}

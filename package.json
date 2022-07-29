@@ -1,6 +1,6 @@
 {
   "name": "thisandagain-pls-explain",
-  "version": "1.0.0",
+  "version": "1.2.0-prerelease",
   "private": true,
   "description": "Discord bot",
   "main": "src/index.js",
@@ -20,6 +20,7 @@
     "discord.js": "^13.8.1",
     "dotenv": "^16.0.1",
     "linkedom": "^0.14.12",
+    "mongodb": "^4.8.1",
     "node-fetch": "^3.2.6"
   },
   "devDependencies": {
