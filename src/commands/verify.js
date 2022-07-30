@@ -1,6 +1,5 @@
 import fetch from "node-fetch"
-import { SlashCommandBuilder, SlashCommandStringOption, SlashCommandUserOption, SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders"
+import { SlashCommandBuilder, SlashCommandStringOption, SlashCommandUserOption } from "@discordjs/builders";
 import { Permissions } from "discord.js";
 export const data = new SlashCommandBuilder()
     .setName("verify")

@@ -1,7 +1,6 @@
-import { WebhookClient, MessageEmbed } from "discord.js";
-import { DOMParser } from "linkedom";
+import { MessageEmbed } from "discord.js";
 
-import { feedChannelID, guildID } from "../constants.js";
+import { feedChannelID } from "../constants.js";
 import { updateCache, getCacheItem } from "../lib/cache.js";
 import { fetchOcular, fetchScratch, fetch } from "./data.js";
 import parseSafeHTML from "./safe-parse.js";
@@ -23,6 +22,7 @@ export default async function main(client) {
         const ocularCache = Object.create(null)
         const scratchCache = Object.create(null);
 
+        const toSend = [];
         for (const post of feed) {
             if (post.id <= lastIndexedPost) {
                 continue;
@@ -30,23 +30,11 @@ export default async function main(client) {
             foundNewAtLeastOnce = true;
 
             const { content: { bb: content }, author, date } = post;
-            console.log(`New post by ${author} at ${date}`);
+            console.log(`New post by ${author} at ${new Date(date)}`);
 
             const ocular = await (ocularCache[author] || (ocularCache[author] = fetchOcular(author)));
             const scratch = await (scratchCache[author] || (scratchCache[author] = fetchScratch(author)));
 
-            // Look for a discord user with the same username
-            let newAuthor = null;
-            const user = await db.collection("users").findOne({
-                accounts: {
-                    $elemMatch: {
-                        name: author
-                    } 
-                }
-            });
-            if (user) {
-                newAuthor = "<@" + user.user + ">";
-            }
             const embed = new MessageEmbed()
                 .setTitle(post.topic.title)
                 .setDescription(
@@ -61,11 +49,20 @@ export default async function main(client) {
                 url: `https://scratch.mit.edu/users/${author}/`,
                 iconURL: `https://uploads.scratch.mit.edu/get_image/user/${scratch.id}_70x70.png`,
             });
-
-            channel.send({
-                embeds: [embed],
-            })
+            toSend.push(embed);
             lastIndexedPost = post.id;
+        };
+        if (toSend.length > 0) {
+            // If there are more than 10 posts, send them in batches of 10. (thanks github copilot)
+            const chunks = [];
+            for (let i = 0; i < toSend.length; i += 10) {
+                chunks.push(toSend.slice(i, i + 10));
+            }
+            for (const chunk of chunks) {
+                await channel.send({
+                    embeds: chunk,
+                });
+            }
         };
         updateCache({
             "last-indexed-post": lastIndexedPost,
